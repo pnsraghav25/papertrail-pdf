@@ -108,12 +108,11 @@
   .hero {
     position: relative; overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
-    /* background:
+    background:
       radial-gradient(calc(520px * var(--glow-scale)) circle at 88% -10%, color-mix(in srgb, var(--primary) 40%, transparent), transparent 60%),
       radial-gradient(calc(420px * var(--glow-scale)) circle at 0% 120%, color-mix(in srgb, var(--ring) 22%, transparent), transparent 60%),
-      linear-gradient(135deg, color-mix(in srgb, var(--primary) 14%, var(--card)), var(--card)); */
-      background: var(--card-foreground);
-      box-shadow: 0 0 calc(60px * var(--glow-scale)) -20px color-mix(in srgb, var(--primary) var(--glow-mid), transparent);
+      linear-gradient(135deg, color-mix(in srgb, var(--primary) 14%, var(--card)), var(--card));
+    box-shadow: 0 0 calc(60px * var(--glow-scale)) -20px color-mix(in srgb, var(--primary) var(--glow-mid), transparent);
   }
   .hero::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
