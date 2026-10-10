@@ -1,0 +1,16 @@
+{
+  "name": "papertrail-pdf-library",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "index": "node scripts/index-pdfs.mjs",
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && node scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.1.0",
+    "@tailwindcss/cli": "^4.1.0"
+  }
+}

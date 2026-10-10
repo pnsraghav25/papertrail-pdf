@@ -1,0 +1,254 @@
+@import "tailwindcss";
+@source "../index.html";
+@source "../app.js";
+
+/* Theme variables (--background, --primary, ...) are generated from themes.js
+   by scripts/build.mjs and appended to the compiled stylesheet.
+
+   Glow controls (set on <html> by the customize menu):
+     data-glow="on" | "off"   turns glow effects on or off
+     --glow-scale             glow radius multiplier (0.5 to 2, default 1)        */
+
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
+@layer base {
+  :root { --glow-scale: 1; }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+    transition: background-color .25s, color .25s;
+  }
+  * { border-color: color-mix(in srgb, var(--border) 85%, var(--primary)); }
+  button, a, select { -webkit-tap-highlight-color: transparent; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: .45; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+  input, select { caret-color: var(--primary); }
+  input::placeholder { color: var(--muted-foreground); }
+  ::selection { background: color-mix(in srgb, var(--primary) 35%, transparent); }
+}
+
+@layer components {
+  /* ---------- Page background ---------- */
+  .aurora {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    opacity: var(--aurora-opacity);
+    background:
+      radial-gradient(calc(700px * var(--glow-scale)) circle at 12% -8%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 60%),
+      radial-gradient(calc(600px * var(--glow-scale)) circle at 95% 15%, color-mix(in srgb, var(--ring) 16%, transparent), transparent 60%),
+      radial-gradient(calc(800px * var(--glow-scale)) circle at 50% 110%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 60%);
+  }
+
+  /* ---------- Surfaces ---------- */
+  .sidebar {
+    background: color-mix(in srgb, var(--secondary) 55%, transparent);
+    backdrop-filter: blur(14px);
+  }
+  .surface, .panel {
+    background: color-mix(in srgb, var(--card) 78%, transparent);
+    color: var(--card-foreground);
+    backdrop-filter: blur(12px);
+    border: 1px solid color-mix(in srgb, var(--border) 85%, var(--primary));
+    box-shadow: inset 0 1px 0 0 color-mix(in srgb, var(--foreground) 4%, transparent);
+  }
+  .panel { border-radius: 1rem; }
+  .popover { background: var(--popover); color: var(--popover-foreground); }
+
+  /* ---------- Text and tints ---------- */
+  .muted { color: var(--muted-foreground); }
+  .primary-text { color: var(--primary); }
+  .soft {
+    background: color-mix(in srgb, var(--primary) 13%, transparent);
+    color: color-mix(in srgb, var(--primary) 80%, var(--foreground));
+  }
+  .hover-soft { transition: background-color .15s, color .15s, border-color .15s, box-shadow .15s; }
+  .hover-soft:hover { background: color-mix(in srgb, var(--primary) 9%, transparent); color: var(--foreground); }
+  .link-hover { transition: color .15s; }
+  .link-hover:hover { color: var(--primary); }
+  .text-gradient {
+    background: linear-gradient(90deg, var(--foreground) 30%, color-mix(in srgb, var(--primary) 85%, var(--foreground)));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* ---------- Glow elements (blur sizes scale with --glow-scale) ---------- */
+  .nav-active {
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+    color: var(--foreground);
+    box-shadow: inset 3px 0 0 var(--primary),
+                0 0 calc(22px * var(--glow-scale)) -8px color-mix(in srgb, var(--primary) var(--glow-mid), transparent);
+  }
+  .glow-btn {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 88%, white), var(--primary));
+    color: var(--primary-foreground);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 70%, transparent),
+                0 8px calc(24px * var(--glow-scale)) -6px color-mix(in srgb, var(--primary) var(--glow-mid), transparent);
+    transition: box-shadow .2s, transform .2s;
+  }
+  .glow-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 1px var(--primary),
+                0 10px calc(34px * var(--glow-scale)) -4px color-mix(in srgb, var(--primary) var(--glow-strong), transparent);
+  }
+  .icon-tile {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 24%, transparent), color-mix(in srgb, var(--primary) 6%, transparent));
+    color: var(--primary);
+    border: 1px solid color-mix(in srgb, var(--primary) 28%, transparent);
+    box-shadow: 0 0 calc(18px * var(--glow-scale)) -6px color-mix(in srgb, var(--primary) var(--glow-strong), transparent);
+  }
+  .dot { box-shadow: 0 0 calc(10px * var(--glow-scale)) var(--primary); }
+  .search:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring) 22%, transparent),
+                0 0 calc(30px * var(--glow-scale)) -8px color-mix(in srgb, var(--primary) var(--glow-mid), transparent);
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative; overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+    /* background:
+      radial-gradient(calc(520px * var(--glow-scale)) circle at 88% -10%, color-mix(in srgb, var(--primary) 40%, transparent), transparent 60%),
+      radial-gradient(calc(420px * var(--glow-scale)) circle at 0% 120%, color-mix(in srgb, var(--ring) 22%, transparent), transparent 60%),
+      linear-gradient(135deg, color-mix(in srgb, var(--primary) 14%, var(--card)), var(--card)); */
+      background: var(--card-foreground);
+      box-shadow: 0 0 calc(60px * var(--glow-scale)) -20px color-mix(in srgb, var(--primary) var(--glow-mid), transparent);
+  }
+  .hero::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--foreground) 6%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--foreground) 6%, transparent) 1px, transparent 1px);
+    background-size: 36px 36px;
+    -webkit-mask-image: radial-gradient(ellipse at 80% 0%, black, transparent 70%);
+    mask-image: radial-gradient(ellipse at 80% 0%, black, transparent 70%);
+  }
+  .hero > * { position: relative; z-index: 1; }
+  .stat {
+    background: color-mix(in srgb, var(--background) 45%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+  }
+
+  /* ---------- Buttons ---------- */
+  .icon-button {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.75rem; height: 2.75rem; border-radius: .8rem;
+  }
+
+  /* ---------- Folder tree ---------- */
+  .folder-row { display: flex; align-items: center; gap: .25rem; min-height: 2.6rem; border-radius: .65rem; color: var(--muted-foreground); }
+  .folder-row:hover { background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--foreground); }
+  .folder-row.selected {
+    background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--foreground);
+    box-shadow: inset 3px 0 0 var(--primary),
+                0 0 calc(22px * var(--glow-scale)) -8px color-mix(in srgb, var(--primary) var(--glow-mid), transparent);
+  }
+  .folder-select { display: flex; align-items: center; gap: .55rem; flex: 1; min-width: 0; text-align: left; padding: .55rem .4rem; font-size: .875rem; }
+  .folder-select svg:first-child { color: var(--primary); flex-shrink: 0; }
+  .folder-toggle { width: 1.5rem; flex-shrink: 0; padding: .2rem; color: var(--muted-foreground); }
+  .folder-toggle svg { transition: transform .15s; }
+
+  /* ---------- Document cards ---------- */
+  .document-card { padding: 1.3rem; border-radius: 1rem; transition: border-color .2s, transform .2s, box-shadow .2s; cursor: pointer; }
+  .document-card:hover .file-title { color: var(--primary); }
+  .document-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 25%, transparent),
+                0 14px calc(40px * var(--glow-scale)) -12px color-mix(in srgb, var(--primary) var(--glow-strong), transparent);
+  }
+  .document-card .arrow { color: var(--primary); transition: transform .2s, filter .2s; }
+  .document-card:hover .arrow { transform: translate(2px, -2px); filter: drop-shadow(0 0 calc(6px * var(--glow-scale)) var(--primary)); }
+  .file-title { overflow-wrap: anywhere; }
+  .list-layout .document-card { display: flex; align-items: center; gap: 1rem; }
+  .list-layout .card-top { flex-shrink: 0; }
+  .list-layout .card-top .arrow { display: none; }
+  .list-layout .file-info { flex: 1; min-width: 0; }
+  .list-layout .file-info .file-title { margin-top: 0; }
+  .list-layout .file-footer { margin-top: 0; padding-top: 0; border-top: 0; }
+  mark { background: color-mix(in srgb, var(--primary) 28%, transparent); color: inherit; border-radius: .2rem; }
+
+  /* ---------- Customize menu ---------- */
+  .theme-option { display: flex; align-items: center; gap: .5rem; border: 1px solid color-mix(in srgb, var(--border) 85%, var(--primary)); border-radius: .75rem; padding: .65rem; font-size: .875rem; text-align: left; }
+  .theme-option .check { margin-left: auto; visibility: hidden; }
+  .theme-option[aria-pressed="true"] { background: color-mix(in srgb, var(--primary) 14%, transparent); border-color: var(--ring); }
+  .theme-option[aria-pressed="true"] .check { visibility: visible; }
+  .swatch { width: 1rem; height: 1rem; border-radius: 9999px; flex-shrink: 0; }
+
+  /* Glow on/off switch */
+  .switch {
+    position: relative; flex-shrink: 0; width: 2.5rem; height: 1.4rem; border-radius: 9999px;
+    background: var(--muted); border: 1px solid var(--border);
+    transition: background-color .2s, border-color .2s, box-shadow .2s;
+  }
+  .switch-thumb {
+    position: absolute; top: 2px; left: 2px; width: 1rem; height: 1rem; border-radius: 9999px;
+    background: var(--muted-foreground); transition: transform .2s, background-color .2s;
+  }
+  .switch[aria-checked="true"] {
+    background: var(--primary); border-color: var(--primary);
+    box-shadow: 0 0 calc(12px * var(--glow-scale)) color-mix(in srgb, var(--primary) var(--glow-mid), transparent);
+  }
+  .switch[aria-checked="true"] .switch-thumb { transform: translateX(18px); background: var(--primary-foreground); }
+
+  /* Glow radius slider */
+  .glow-range { width: 100%; accent-color: var(--primary); cursor: pointer; }
+  .glow-range:disabled { cursor: not-allowed; }
+  .glow-radius-row { transition: opacity .2s; }
+  .glow-radius-row.is-disabled { opacity: .45; }
+
+  /* ---------- PDF viewer ---------- */
+  dialog {
+    padding: 0; border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--border));
+    background: var(--popover); color: var(--popover-foreground);
+    border-radius: 1rem; width: min(1100px, 96vw); height: 90dvh; max-width: 96vw; max-height: 94dvh; margin: auto;
+    box-shadow: 0 0 calc(80px * var(--glow-scale)) -20px color-mix(in srgb, var(--primary) var(--glow-mid), transparent);
+  }
+  dialog::backdrop { background: rgb(0 0 0 / .75); backdrop-filter: blur(5px); }
+  .viewer-shell { display: flex; flex-direction: column; height: 100%; }
+  #pdf-frame { flex: 1; width: 100%; border: 0; background: var(--muted); }
+
+  /* ================================================================== */
+  /* Glow OFF: plain gradients and ordinary shadows, no colored light    */
+  /* ================================================================== */
+  :root[data-glow="off"] .aurora {
+    opacity: 1;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 7%, var(--background)) 0%, var(--background) 480px);
+  }
+  :root[data-glow="off"] .hero {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, var(--card)) 0%, var(--card) 75%);
+    box-shadow: none;
+  }
+  :root[data-glow="off"] .glow-btn,
+  :root[data-glow="off"] .glow-btn:hover {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 70%, transparent), 0 1px 2px rgb(0 0 0 / .15);
+  }
+  :root[data-glow="off"] .icon-tile,
+  :root[data-glow="off"] .dot { box-shadow: none; }
+  :root[data-glow="off"] .nav-active,
+  :root[data-glow="off"] .folder-row.selected { box-shadow: inset 3px 0 0 var(--primary); }
+  :root[data-glow="off"] .search:focus-within { box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring) 22%, transparent); }
+  :root[data-glow="off"] .document-card:hover {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 25%, transparent), 0 10px 24px -14px rgb(0 0 0 / .35);
+  }
+  :root[data-glow="off"] .document-card:hover .arrow { filter: none; }
+  :root[data-glow="off"] .switch[aria-checked="true"] { box-shadow: none; }
+  :root[data-glow="off"] dialog { box-shadow: 0 24px 60px -20px rgb(0 0 0 / .5); }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 767px) {
+    #sidebar {
+      position: fixed; inset: 0 auto 0 0; width: min(300px, 86vw); z-index: 40;
+      transform: translateX(-100%); transition: transform .2s; background: var(--background);
+    }
+    #sidebar.open { transform: translateX(0); }
+    .list-layout .document-card { flex-wrap: wrap; }
+    .list-layout .file-footer { width: 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+    .document-card:hover, .glow-btn:hover { transform: none; }
+  }
+}

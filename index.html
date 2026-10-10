@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A searchable, organized PDF library.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233b82f6'/%3E%3Cpath d='M11 8h7l4 4v12H11z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <title>Papertrail | PDF Library</title>
+  <!-- Apply saved theme, mode and glow settings before first paint (prevents a flash of the wrong look). -->
+  <script>
+    (function () {
+      var themes = ['orange', 'blue', 'green', 'rose', 'zinc'], root = document.documentElement, theme, mode, glow, radius;
+      try {
+        theme = localStorage.getItem('papertrail-color');
+        mode = localStorage.getItem('papertrail-mode');
+        glow = localStorage.getItem('papertrail-glow');
+        radius = parseInt(localStorage.getItem('papertrail-glow-radius'), 10);
+      } catch (e) {}
+      root.dataset.theme = themes.indexOf(theme) > -1 ? theme : 'blue';
+      root.dataset.mode = mode === 'dark' || mode === 'light' ? mode : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      root.dataset.glow = glow === 'off' ? 'off' : 'on';
+      radius = isNaN(radius) ? 100 : Math.min(200, Math.max(50, Math.round(radius / 10) * 10));
+      root.style.setProperty('--glow-scale', String(radius / 100));
+    })();
+  </script>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body class="min-h-screen">
+  <div class="aurora" aria-hidden="true"></div>
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 panel p-3">Skip to documents</a>
+  <div id="mobile-backdrop" hidden class="fixed inset-0 bg-black/60 z-30"></div>
+
+  <div class="flex min-h-screen">
+    <!-- ================= Sidebar ================= -->
+    <aside id="sidebar" aria-label="Folder navigation" class="sidebar border-r md:w-72 md:sticky md:top-0 md:h-screen shrink-0 flex flex-col">
+      <div class="p-6 flex items-center gap-3">
+        <span class="glow-btn p-2.5 rounded-xl inline-flex" data-icon="book"></span>
+        <div>
+          <div class="text-xl font-bold tracking-tight">Papertrail</div>
+          <div class="text-[10px] tracking-widest muted mt-1">YOUR PERSONAL PDF LIBRARY</div>
+        </div>
+        <button id="close-sidebar" class="md:hidden ml-auto muted" aria-label="Close folders" data-icon="close"></button>
+      </div>
+
+      <div class="px-5 py-3">
+        <p class="text-[11px] font-semibold tracking-widest muted mb-3">WORKSPACE</p>
+        <button id="all-documents" class="w-full flex items-center gap-3 rounded-xl p-3 text-sm hover-soft">
+          <span class="primary-text inline-flex" data-icon="grid"></span><span>All documents</span>
+          <span id="all-count" class="ml-auto text-xs">0</span>
+        </button>
+      </div>
+
+      <div class="px-5 mt-4 flex items-center justify-between">
+        <h2 class="text-[11px] font-semibold tracking-widest muted">FOLDERS</h2>
+        <button id="expand-folders" class="text-xs muted link-hover p-2">Expand all</button>
+      </div>
+      <nav id="folder-tree" aria-label="PDF folders" class="px-4 py-2 overflow-auto flex-1"></nav>
+
+      <div class="m-5 p-4 rounded-xl soft text-xs leading-relaxed flex gap-2">
+        <span class="shrink-0" data-icon="sparkles"></span>
+        <span>A place for everything. A theme that feels like you.</span>
+      </div>
+    </aside>
+
+    <!-- ================= Main ================= -->
+    <main id="main" class="min-w-0 flex-1 px-5 py-6 md:px-10 md:py-8 max-w-[1500px] mx-auto w-full">
+      <header class="flex items-center gap-3">
+        <button id="open-sidebar" class="surface icon-button hover-soft md:hidden" aria-label="Open folders" aria-expanded="false" data-icon="menu"></button>
+        <nav id="breadcrumbs" aria-label="Breadcrumb" class="flex flex-wrap gap-2 items-center text-sm muted flex-1 min-w-0"></nav>
+
+        <!-- Customize menu: color theme + glow -->
+        <div class="relative" id="theme-menu">
+          <button id="theme-trigger" class="surface hover-soft flex items-center gap-2 rounded-xl px-3 h-11" aria-haspopup="true" aria-expanded="false" aria-controls="theme-picker">
+            <span class="primary-text inline-flex" data-icon="palette"></span>
+            <span id="theme-label" class="hidden sm:inline text-sm">Blue</span>
+            <span class="dot h-3 w-3 rounded-full" style="background:var(--primary)"></span>
+          </button>
+          <div id="theme-picker" hidden role="group" aria-label="Customize appearance" class="popover border absolute right-0 top-full mt-3 z-20 w-[290px] max-w-[85vw] rounded-2xl p-4 shadow-2xl">
+            <p class="text-sm font-semibold">Customize your workspace</p>
+            <p class="text-xs muted mt-1 mb-4">Pick a primary color. Every surface follows.</p>
+            <div id="theme-options" class="grid grid-cols-2 gap-2"></div>
+
+            <!-- Glow controls -->
+            <div class="border-t mt-4 pt-4">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p id="glow-label" class="text-sm font-medium">Glow effects</p>
+                  <p id="glow-hint" class="text-xs muted mt-0.5">Off shows plain gradients.</p>
+                </div>
+                <button id="glow-toggle" type="button" role="switch" aria-checked="true" aria-labelledby="glow-label" aria-describedby="glow-hint" class="switch">
+                  <span class="switch-thumb"></span>
+                </button>
+              </div>
+              <div id="glow-radius-row" class="glow-radius-row mt-4">
+                <div class="flex items-center justify-between text-xs">
+                  <label for="glow-radius" class="muted">Glow radius</label>
+                  <output id="glow-radius-value" for="glow-radius" class="primary-text font-medium">100%</output>
+                </div>
+                <input id="glow-radius" type="range" min="50" max="200" step="10" value="100" class="glow-range mt-2">
+                <div class="flex justify-between text-[10px] muted mt-1"><span>Tight</span><span>Wide</span></div>
+              </div>
+            </div>
+
+            <div class="border-t mt-4 pt-3 flex items-center justify-between text-xs muted">
+              <span id="theme-status">Saved automatically</span>
+              <button id="theme-reset" class="hover-soft p-2 rounded-lg" aria-label="Reset color and glow to defaults" title="Reset to defaults" data-icon="reset"></button>
+            </div>
+          </div>
+        </div>
+
+        <button id="mode-toggle" class="surface icon-button hover-soft" aria-label="Toggle dark mode"></button>
+      </header>
+
+      <!-- Hero -->
+      <section class="hero mt-8 rounded-3xl p-7 md:p-10">
+        <div>
+          <span class="soft inline-flex items-center gap-2 text-[11px] tracking-widest font-semibold rounded-full px-3 py-1">
+            <span class="inline-flex" data-icon="sparkles" data-size="12"></span>LESS SEARCHING. MORE READING.
+          </span>
+          <h1 class="text-gradient text-3xl md:text-5xl font-bold tracking-tight mt-4 leading-tight">Your knowledge,<br>beautifully organized.</h1>
+          <p class="muted mt-3 text-sm md:text-base">Every folder. Every PDF. One calm place to find it.</p>
+          <div class="flex flex-wrap gap-3 mt-7">
+            <div class="stat rounded-2xl px-5 py-3"><strong id="stat-documents" class="text-xl primary-text">0</strong><p class="text-xs muted mt-1">Documents</p></div>
+            <div class="stat rounded-2xl px-5 py-3"><strong id="stat-folders" class="text-xl primary-text">0</strong><p class="text-xs muted mt-1">Folders</p></div>
+            <div class="stat rounded-2xl px-5 py-3"><strong id="stat-size" class="text-xl primary-text">0 B</strong><p class="text-xs muted mt-1">Library size</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search + controls -->
+      <section aria-label="Search and filters" class="mt-8 flex flex-wrap gap-3">
+        <label class="search surface flex items-center gap-3 px-4 py-3 rounded-2xl flex-1 min-w-[200px] transition-shadow">
+          <span class="muted inline-flex" data-icon="search"></span>
+          <input id="search" type="search" autocomplete="off" placeholder="Search PDF filenames..." aria-label="Search PDF filenames" class="bg-transparent outline-none w-full text-sm py-1">
+          <kbd class="hidden lg:inline text-xs muted border rounded px-2 py-0.5">/</kbd>
+        </label>
+        <select id="sort" aria-label="Sort documents" class="surface rounded-2xl px-3 py-3 text-sm">
+          <option value="name">Name: A to Z</option>
+          <option value="name-desc">Name: Z to A</option>
+          <option value="newest">Recently updated</option>
+          <option value="size">Largest first</option>
+        </select>
+        <button id="layout-toggle" class="surface hover-soft rounded-2xl px-4" aria-label="Switch to list view"></button>
+      </section>
+
+      <div class="flex flex-wrap gap-3 justify-between items-center mt-6 mb-5">
+        <div class="flex items-center gap-3">
+          <h2 id="section-title" class="font-semibold text-lg">All documents</h2>
+          <span id="result-count" role="status" aria-live="polite" class="soft rounded-full px-3 py-1 text-xs">Loading...</span>
+        </div>
+        <label class="flex items-center gap-2 text-xs muted">
+          <input id="recursive" type="checkbox" checked style="accent-color:var(--primary)">Include subfolders
+        </label>
+      </div>
+
+      <div id="subfolders" class="flex flex-wrap gap-2 mb-5"></div>
+      <div id="documents" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+
+      <div id="empty-state" hidden class="panel p-12 text-center">
+        <span class="icon-tile inline-flex p-4 rounded-2xl" data-icon="search" data-size="24"></span>
+        <h3 id="empty-title" class="font-semibold text-lg mt-4">No PDFs yet</h3>
+        <p id="empty-message" class="muted text-sm mt-2"></p>
+        <button id="reset-filters" class="glow-btn rounded-xl px-4 py-2 mt-5 text-sm font-medium">Reset filters</button>
+      </div>
+
+      <div class="flex justify-between items-center gap-3 mt-6">
+        <button id="previous" class="surface hover-soft rounded-xl px-4 py-2 text-sm" disabled>Previous</button>
+        <span id="page-label" class="text-xs muted"></span>
+        <button id="next" class="surface hover-soft rounded-xl px-4 py-2 text-sm" disabled>Next</button>
+      </div>
+
+      <footer class="mt-10 pb-4 text-xs muted flex flex-wrap justify-between gap-2">
+        <span>Papertrail · A little order for everything you read. <span id="updated-at"></span></span>
+        <span class="flex items-center gap-2"><span class="dot h-2 w-2 rounded-full" style="background:var(--primary)"></span><span id="footer-theme"></span></span>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ================= PDF viewer ================= -->
+  <dialog id="viewer" aria-labelledby="viewer-title">
+    <div class="viewer-shell">
+      <header class="p-4 border-b flex flex-wrap gap-3 items-center">
+        <span class="icon-tile inline-flex p-2 rounded-xl" data-icon="file"></span>
+        <div class="flex-1 min-w-0">
+          <h2 id="viewer-title" class="font-semibold text-sm break-all"></h2>
+          <p id="viewer-path" class="primary-text text-xs break-all mt-1"></p>
+        </div>
+        <a id="viewer-open" target="_blank" rel="noopener" class="surface hover-soft rounded-lg text-sm px-3 py-2">Open in tab ↗</a>
+        <a id="viewer-download" download class="glow-btn rounded-lg text-sm px-3 py-2">Download</a>
+        <button id="viewer-close" class="surface icon-button hover-soft" aria-label="Close PDF viewer" data-icon="close"></button>
+      </header>
+      <p class="text-xs muted px-4 py-2">If your browser cannot preview this PDF, use Open in tab or Download.</p>
+      <iframe id="pdf-frame" title="PDF document preview"></iframe>
+    </div>
+  </dialog>
+
+  <noscript><p class="p-6">Enable JavaScript to search and browse this library.</p></noscript>
+</body>
+</html>
